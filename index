@@ -63,125 +63,10 @@ class PersonalFinanceAI:
     def visualize_spending(self):
         """Creates a pie chart of spending categories."""
         summary = self.spending_summary()
+        # Convert negative values to positive for the pie chart
+        positive_summary = {k: abs(v) for k, v in summary.items()}
         plt.figure(figsize=(8, 5))
-        pd.Series(summary).plot(kind='pie', autopct='%1.1f%%')
-        plt.title("Spending Breakdown")
-        plt.ylabel('')
-        plt.show()
-    
-    def suggest_budget(self):
-        """Analyzes spending and suggests budgeting strategies."""
-        summary = self.spending_summary()
-        total_spent = sum(summary.values())
-        
-        suggestions = []
-        print("\nBudget Suggestions:")
-        for category, amount in summary.items():
-            percentage = (amount / total_spent) * 100
-            if percentage > 30:
-                suggestion = f"⚠️ You are spending too much on {category} ({percentage:.2f}%)"
-            elif percentage < 10:
-                suggestion = f"✅ Your {category} spending is well-managed ({percentage:.2f}%)"
-            else:
-                suggestion = f"ℹ️ Your {category} spending is moderate ({percentage:.2f}%)"
-            suggestions.append(suggestion)
-            print(suggestion)
-        return suggestions
-    
-    def ask_questions(self):
-        """Asks specific personal finance questions to the user."""
-        self.user_data['income'] = float(input("What is your monthly income? "))
-        self.user_data['savings_goal'] = float(input("What is your monthly savings goal? "))
-        self.user_data['debt'] = float(input("What is your total debt? "))
-        self.user_data['financial_goal'] = input("What is your main financial goal? (e.g., buying a house, saving for retirement) ")
-    
-    def personalized_suggestions(self):
-        """Provides personalized suggestions based on user data."""
-        income = self.user_data.get('income', 0)
-        savings_goal = self.user_data.get('savings_goal', 0)
-        debt = self.user_data.get('debt', 0)
-        financial_goal = self.user_data.get('financial_goal', 'None')
-        
-        print("\nPersonalized Suggestions:")
-        if income > 0:
-            savings_percentage = (savings_goal / income) * 100
-            print(f"Your savings goal is {savings_percentage:.2f}% of your income.")
-            if savings_percentage < 20:
-                print("Consider increasing your savings goal to at least 20% of your income.")
-            else:
-                print("Great job on setting a healthy savings goal!")
-        
-        if debt > 0:
-            print(f"You have a total debt of ${debt:.2f}. Consider creating a debt repayment plan.")
-        
-        print(f"Your main financial goal is: {financial_goal}. Make sure to align your spending and savings towards achieving this goal.")
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
-
-class PersonalFinanceAI:
-    def __init__(self, file_path):
-        self.file_path = file_path
-        self.df = self.load_data(file_path)
-        self.process_data()
-        self.user_data = {}
-    
-    def load_data(self, file_path):
-        """Loads data from the specified CSV file."""
-        try:
-            df = pd.read_csv(file_path)
-            return df
-        except FileNotFoundError:
-            print(f"File not found: {file_path}")
-            new_path = input("Please provide the correct path to the transactions CSV file: ")
-            return self.load_data(new_path)
-    
-    def process_data(self):
-        """Cleans and categorizes transactions."""
-        # Ensure columns are standardized
-        self.df.columns = [col.lower().strip() for col in self.df.columns]
-        
-        # Assuming column names are 'date', 'amount', and 'category'
-        if 'description' not in self.df.columns:
-            raise ValueError("The input file must contain a 'description' column.")
-        
-        if 'category' not in self.df.columns:
-            self.df['category'] = self.categorize_transactions()
-    
-    def categorize_transactions(self):
-        """Auto-categorizes transactions based on keywords."""
-        categories = {
-            'Food': ['restaurant', 'grocery', 'starbucks', 'mcdonalds'],
-            'Entertainment': ['netflix', 'spotify', 'movie', 'theater'],
-            'Transportation': ['uber', 'lyft', 'gas', 'metro'],
-            'Bills': ['rent', 'electricity', 'internet', 'phone'],
-            'Shopping': ['amazon', 'walmart', 'clothing'],
-            'Other': []
-        }
-        
-        def classify(desc):
-            desc = str(desc).lower()
-            for cat, keywords in categories.items():
-                if any(keyword in desc for keyword in keywords):
-                    return cat
-            return 'Other'
-        
-        return self.df['description'].apply(classify)
-    
-    def spending_summary(self):
-        """Generates a summary of spending per category."""
-        summary = self.df.groupby('category')['amount'].sum()
-        summary_dict = summary.to_dict()
-        print("\nSpending Summary:")
-        for category, amount in summary_dict.items():
-            print(f"{category}: ${amount:.2f}")
-        return summary_dict
-    
-    def visualize_spending(self):
-        """Creates a pie chart of spending categories."""
-        summary = self.spending_summary()
-        plt.figure(figsize=(8, 5))
-        pd.Series(summary).plot(kind='pie', autopct='%1.1f%%')
+        pd.Series(positive_summary).plot(kind='pie', autopct='%1.1f%%')
         plt.title("Spending Breakdown")
         plt.ylabel('')
         plt.show()
@@ -244,7 +129,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
